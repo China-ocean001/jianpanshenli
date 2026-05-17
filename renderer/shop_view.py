@@ -589,11 +589,14 @@ class ShopView:
             return
         try:
             _assets = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets')
-            wx  = pygame.image.load(os.path.join(_assets, 'wx.jpg')).convert()
-            zfb = pygame.image.load(os.path.join(_assets, 'zhifubao.jpg')).convert()
-            sz = (270, 270)
-            self._recharge_imgs = (pygame.transform.scale(wx, sz),
-                                   pygame.transform.scale(zfb, sz))
+            imgs = []
+            for fname in ('wx.jpg', 'zhifubao.jpg'):
+                img = pygame.image.load(os.path.join(_assets, fname)).convert()
+                iw, ih = img.get_size()
+                # Fit inside 260×320, preserve aspect ratio
+                scale = min(260 / iw, 320 / ih)
+                imgs.append(pygame.transform.scale(img, (int(iw * scale), int(ih * scale))))
+            self._recharge_imgs = tuple(imgs)
         except Exception:
             self._recharge_imgs = ()   # failed – show placeholder text
 
@@ -605,10 +608,21 @@ class ShopView:
         ov.fill((0, 0, 0, 185))
         screen.blit(ov, (0, 0))
 
-        # Panel
-        pw, ph = 680, 480
+        # Determine panel size based on loaded images
+        if self._recharge_imgs and len(self._recharge_imgs) == 2:
+            wx_s, zfb_s = self._recharge_imgs
+            img_gap  = 30
+            imgs_w   = wx_s.get_width() + zfb_s.get_width() + img_gap
+            imgs_h   = max(wx_s.get_height(), zfb_s.get_height())
+        else:
+            imgs_w, imgs_h = 400, 0
+
+        pw = max(560, imgs_w + 80)
+        ph = 85 + imgs_h + 42   # title+desc  +  images  +  labels+margin
         px = (WINDOW_W - pw) // 2
-        py = (WINDOW_H - ph) // 2
+        py = max(HUD_H + 8, (WINDOW_H - ph) // 2)
+
+        # Panel background
         panel = pygame.Surface((pw, ph), pygame.SRCALPHA)
         panel.fill((18, 24, 44, 248))
         pygame.draw.rect(panel, (88, 105, 200), (0, 0, pw, ph), 2, border_radius=12)
@@ -623,24 +637,23 @@ class ShopView:
         self._recharge_close_rect = close_r
 
         # Title
-        _t(screen, self.font_med, "充值金币", px + pw // 2, py + 22,
+        _t(screen, self.font_med, "充值金币", px + pw // 2, py + 18,
            (215, 215, 255), center=True)
 
         # Rate description
         _t(screen, self.font_sm,
            "🪙  1元人民币 = 1枚金币 · 支付后24小时内到账",
-           px + pw // 2, py + 56, (175, 200, 255), center=True)
+           px + pw // 2, py + 48, (175, 200, 255), center=True)
 
         # QR images
-        img_top = py + 90
+        img_top = py + 78
         if self._recharge_imgs and len(self._recharge_imgs) == 2:
             wx_s, zfb_s = self._recharge_imgs
-            gap   = 30
-            total = wx_s.get_width() + zfb_s.get_width() + gap
-            wx_x  = px + (pw - total) // 2
-            zfb_x = wx_x + wx_s.get_width() + gap
+            img_gap = 30
+            total_w = wx_s.get_width() + zfb_s.get_width() + img_gap
+            wx_x  = px + (pw - total_w) // 2
+            zfb_x = wx_x + wx_s.get_width() + img_gap
 
-            # thin border around each QR
             pygame.draw.rect(screen, (70, 85, 160),
                              (wx_x - 2, img_top - 2,
                               wx_s.get_width() + 4, wx_s.get_height() + 4), 1)
@@ -651,14 +664,14 @@ class ShopView:
             screen.blit(wx_s,  (wx_x,  img_top))
             screen.blit(zfb_s, (zfb_x, img_top))
 
-            lbl_y = img_top + wx_s.get_height() + 10
+            lbl_y = img_top + max(wx_s.get_height(), zfb_s.get_height()) + 8
             _t(screen, self.font_sm, "微信支付",
                wx_x + wx_s.get_width() // 2, lbl_y, (100, 220, 120), center=True)
             _t(screen, self.font_sm, "支付宝",
                zfb_x + zfb_s.get_width() // 2, lbl_y, (80, 155, 255), center=True)
         else:
-            _t(screen, self.font_sm, "（二维码图片加载失败）",
-               px + pw // 2, img_top + 100, (155, 140, 140), center=True)
+            _t(screen, self.font_sm, "（二维码图片加载失败，请检查 assets/ 目录）",
+               px + pw // 2, img_top + 60, (155, 140, 140), center=True)
 
     # ── Status toast ──────────────────────────────────────────────────────────
 
