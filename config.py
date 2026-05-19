@@ -13,11 +13,10 @@ SAVE_INTERVAL_S = 30.0
 
 # ── KeyTree growth ────────────────────────────────────────────────────────────
 # Incremental XP required per stage (stage N-1 → stage N).
-# Total to first max: 500+5000+50000+200000 = 255,500 XP.
-# A key pressed 500 times/day takes ~1.4 years to reach stage 5.
-STAGE_XP_THRESHOLDS = [500, 5_000, 50_000, 200_000]
-# Once at stage 5, each additional 200,000 XP graduates the tree → new seed planted.
-GRADUATION_XP = 200_000
+# Total to first max: 50+500+5000+20000 = 25,550 XP.
+STAGE_XP_THRESHOLDS = [50, 500, 5_000, 20_000]
+# Once at stage 5, each additional 20,000 XP graduates the tree → new seed planted.
+GRADUATION_XP = 20_000
 BASE_XP_PER_PRESS = 1.0
 HIGH_FREQ_TOP20_MULT = 1.5
 HIGH_FREQ_TOP40_MULT = 1.2
