@@ -66,12 +66,13 @@ class KeyTree:
 
     def _check_level_up(self) -> bool:
         if self.stage == MAX_STAGE:
-            # Graduation: reset to new seed, track how many trees grown
+            # Graduation: return to unplanted, user must press again to start new tree
             if self.experience >= GRADUATION_XP:
                 self.trees_grown += 1
-                self.stage = 1
+                self.stage = 0
                 self.experience = 0.0
                 self.health = 1.0
+                self.last_used = None
                 self.level_up_timer = 2.0
                 self.just_graduated = True
                 return True
