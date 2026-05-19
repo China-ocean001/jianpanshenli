@@ -183,7 +183,10 @@ class EventSystem:
                 for k in list(self._pest_hits.keys()):
                     tree = trees.get(k)
                     if tree is not None:
-                        tree.experience = max(0, tree.experience - 5)
+                        if tree.drain_experience(5):
+                            self.new_notifications.append(
+                                f"💀 {tree.display_name} 经验耗尽，已枯死！"
+                            )
 
         # Breeze: slowly heal sick trees
         if self.active_event == 'breeze':

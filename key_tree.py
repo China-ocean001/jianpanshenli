@@ -105,6 +105,18 @@ class KeyTree:
             return True  # tree died
         return False
 
+    def drain_experience(self, amount: float) -> bool:
+        """Subtract experience. If it hits 0 while tree was alive, tree dies.
+        Returns True if the tree just died."""
+        if self.stage == 0 or self.health <= 0.0 or self.experience <= 0.0:
+            return False
+        self.experience = max(0.0, self.experience - amount)
+        if self.experience <= 0.0:
+            self.health = 0.0
+            self.was_dead = True
+            return True
+        return False
+
     def reset(self):
         """Called after death: wipe growth progress, go back to unplanted.
         Preserves trees_grown, was_dead, permanent_xp_boost, and custom_name."""
